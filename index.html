@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Personal Effects — Prototype</title>
+<style>
+:root{
+  --ink:#221d19;--paper:#e8dcc3;--paper2:#f3ead8;--brown:#4b3a2b;--deep:#181513;
+  --brass:#b48b4c;--red:#7b2e2a;--green:#52624b;--muted:#8e806e;--line:#776653;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(circle at 20% 10%,#3a2e25 0,transparent 28%),
+  linear-gradient(150deg,#181513,#2a211b 55%,#151210);color:var(--paper2);
+  font-family:Georgia,"Times New Roman",serif;min-height:100vh}
+button{font:inherit}
+.shell{max-width:1100px;margin:auto;padding:24px}
+.mast{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;border-bottom:1px solid #6e5c49;padding-bottom:16px;margin-bottom:20px}
+.kicker{font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#c7ae81}
+h1{margin:4px 0 0;font-size:clamp(32px,5vw,56px);font-weight:500;letter-spacing:-.03em}
+.stamp{border:2px solid #9c7951;color:#c9a56f;padding:7px 10px;transform:rotate(2deg);font:700 11px system-ui,sans-serif;letter-spacing:.15em;text-transform:uppercase}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(310px,.85fr);gap:22px}
+.panel{background:#e8dcc3;color:var(--ink);border:1px solid #aa9472;box-shadow:0 12px 40px #0007}
+.casehead{padding:18px 20px 14px;border-bottom:1px solid #bca98c;background:linear-gradient(#f1e6d1,#e2d2b6)}
+.casehead h2{margin:0;font-size:27px}
+.casehead p{margin:7px 0 0;color:#5c5044;font-size:15px}
+.casebody{padding:18px}
+.gridwrap{display:grid;grid-template-columns:22px 1fr;grid-template-rows:22px 1fr;gap:5px;max-width:590px;margin:auto;position:relative;padding:18px 18px 26px;background:linear-gradient(145deg,#5a3d26,#2f2118);border:5px solid #241912;border-radius:24px;box-shadow:inset 0 0 0 3px #8f6d45,inset 0 0 28px #0008,0 12px 24px #0005}
+.gridwrap:before,.gridwrap:after{content:"";position:absolute;bottom:-16px;width:70px;height:22px;background:#251a13;border:3px solid #9e7948;border-radius:0 0 12px 12px;box-shadow:inset 0 0 0 2px #4f3826}
+.gridwrap:before{left:24%}.gridwrap:after{right:24%}
+.cols{grid-column:2;display:grid;grid-template-columns:repeat(6,1fr);font:700 11px system-ui,sans-serif;color:#635543;text-align:center}
+.rows{grid-row:2;display:grid;grid-template-rows:repeat(6,1fr);font:700 11px system-ui,sans-serif;color:#635543;align-items:center;text-align:center}
+.grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(6,1fr);aspect-ratio:1;border:4px solid #302116;border-radius:9px;background:
+linear-gradient(90deg,rgba(86,61,37,.08) 50%,transparent 50%),
+linear-gradient(#d4c19a,#c8b186);background-size:18px 18px,auto;position:relative;overflow:hidden;box-shadow:inset 0 0 24px #6a4e3070,inset 0 0 0 5px #b69a6a}
+.grid:before{content:"PERSONAL EFFECTS · PROPERTY LINING";position:absolute;left:10px;bottom:8px;font:700 9px system-ui,sans-serif;letter-spacing:.12em;color:#705b43;opacity:.55;pointer-events:none;z-index:0}
+.cell{border:1px dashed #8f7e61;min-width:0;position:relative}
+.cell:hover{background:#f6eddb33}
+.preview{position:absolute;border:3px dashed #5f7b4e;background:#8eb17838;pointer-events:none;z-index:2;box-shadow:inset 0 0 0 2px #f4e7b8aa}
+.preview.bad{border-color:#9b4037;background:#a64a423d}
+.preview:after{content:"";position:absolute;inset:3px;border:1px solid #f6e8bd99}
+.cell.hl{box-shadow:inset 0 0 0 3px #c38a38}
+.piece{position:absolute;display:flex;align-items:center;justify-content:center;padding:4px;border:2px solid #2f2720;
+  background:
+    radial-gradient(circle at 22% 18%,#ffffff35 0 7%,transparent 8%),
+    linear-gradient(145deg,var(--pc1,#785a3c),var(--pc2,#9b7750));
+  color:#fff8e8;text-align:center;font:700 clamp(9px,1.45vw,13px) system-ui,sans-serif;
+  box-shadow:inset 0 0 0 2px #ffffff26,inset 0 -12px 20px #0002,0 3px 7px #0006;
+  cursor:pointer;overflow:hidden;border-radius:11px}
+.piece:before{content:"";position:absolute;inset:5px;border:1px dashed #fff5;border-radius:7px;pointer-events:none}
+.piece .pieceart{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;height:100%;padding:4px}
+.piece .pieceicon{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#fff4dfcc;color:#2c241d;font-size:26px;line-height:1;box-shadow:0 2px 0 #0002,inset 0 0 0 2px #6b563855}
+.piece .piecename{font-size:clamp(8px,1.05vw,12px);line-height:1.05;text-shadow:0 1px 1px #0008}
+.piece.item-letters .pieceicon{background:#f5dfc8}.piece.item-boots .pieceicon{background:#dcc3a4}
+.piece.item-thermos .pieceicon{background:#c3e5e2}.piece.item-album .pieceicon{background:#d8cbed}
+.piece.item-bell .pieceicon{background:#f3dc93}.piece.item-glasses .pieceicon{background:#cbe2ce}
+.piece.item-hat .pieceicon{background:#d1c6e8}.piece.item-scarf1 .pieceicon,.piece.item-scarf2 .pieceicon,.piece.item-scarf3 .pieceicon{background:#efd0d5}
+.piece.item-wand .pieceicon{background:#ddd9e4}.piece.item-slippers .pieceicon{background:#efd0e0}.piece.item-deck .pieceicon{background:#efc3c5}
+.piece.item-seed .pieceicon{background:#d8e6ae}.piece.item-gloves .pieceicon{background:#efd6aa}.piece.item-trowel .pieceicon{background:#d8dfe3}
+.piece.item-jar .pieceicon{background:#f2c0b2}.piece.item-radio .pieceicon{background:#d5dfb5}.piece.item-photo .pieceicon{background:#dfcfb7}
+.piece.selected.piece.selected{outline:4px solid #e2b55f;z-index:3}
+.piece .arrow{font-size:22px;line-height:1}
+.side{display:flex;flex-direction:column;gap:14px}
+.card{background:
+linear-gradient(rgba(255,255,255,.15),rgba(255,255,255,0)),
+repeating-linear-gradient(0deg,#eadfc9 0,#eadfc9 27px,#dfd1b5 28px);color:var(--ink);border:1px solid #a99474;padding:16px;box-shadow:0 8px 25px #0004;position:relative}
+.card:before{content:"FINAL TRANSIT PROPERTY OFFICE";position:absolute;right:12px;top:8px;font:800 8px system-ui,sans-serif;letter-spacing:.12em;color:#8f7959;opacity:.45}
+.card h3{margin:0 0 9px;font:700 12px system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#684f34}
+.story{font-size:17px;line-height:1.48;font-style:italic}
+.rules{display:grid;gap:8px}
+.rule{display:flex;gap:9px;align-items:flex-start;font:600 14px/1.35 system-ui,sans-serif}
+.dot{width:18px;height:18px;border-radius:50%;border:2px solid #6f6253;flex:0 0 auto;display:grid;place-items:center;font-size:12px}
+.rule.pass .dot{background:#586950;color:#fff;border-color:#586950}
+.rule.fail .dot{background:#8e3b35;color:#fff;border-color:#8e3b35}
+.rule.neutral .dot{background:#c4b59a}
+.tray{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item{border:1px solid #8f795a;background:#f4ead8;color:#2a231d;padding:9px;text-align:left;cursor:pointer;min-height:82px;display:grid;grid-template-columns:42px 1fr;gap:9px;align-items:center;position:relative}
+.item:hover,.item.selected{background:#ddc89f}
+.item.packed{background:#d8dfc9;border-color:#617052}
+.item.packed:after{content:"PACKED ✓";position:absolute;right:7px;top:6px;font:800 9px system-ui,sans-serif;letter-spacing:.08em;color:#46563f}
+.item.unpacked:after{content:"TO PACK";position:absolute;right:7px;top:6px;font:800 9px system-ui,sans-serif;letter-spacing:.08em;color:#82694d}
+.item small{display:block;color:#766a5b;margin-top:4px;font:12px system-ui,sans-serif}
+.itemicon{width:42px;height:42px;border:1px solid #927a5c;background:var(--ic,#d9c7a5);display:grid;place-items:center;font-size:25px;line-height:1;box-shadow:inset 0 0 0 2px #ffffff55;border-radius:8px}
+.item.packed .itemicon{background:#b9c5aa;border-color:#617052}
+.itemtext{padding-top:8px}
+.itemtext b{display:block;padding-right:48px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:1px solid #6c5438;background:#4a392a;color:#fff0d2;padding:11px 12px;cursor:pointer;font-weight:700}
+.btn:hover{filter:brightness(1.12)}
+.btn.secondary{background:#d8c7a8;color:#2d241d}
+.btn.seal{background:#7d332e}
+.btn.full{grid-column:1/-1}
+.hint{font:13px/1.45 system-ui,sans-serif;color:#645849;background:#dccdaf;padding:10px;border-left:4px solid #9b713d}
+.inspect{min-height:88px;font-size:15px;line-height:1.4}
+.inspect b{display:block;margin-bottom:5px}
+.meter{font:700 13px system-ui,sans-serif;display:flex;justify-content:space-between;margin-top:8px}
+.progress{height:6px;background:#cdbd9e;margin-top:5px}
+.progress i{display:block;height:100%;background:#75522f}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.casepick{display:flex;gap:6px;flex-wrap:wrap}
+.casepick button{border:1px solid #897054;background:#2b231d;color:#ddc7a1;padding:10px 12px;cursor:pointer;min-height:42px}
+.casepick button.active{background:#b28a52;color:#1d1713}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#161310;color:#f2e4c8;border:1px solid #9b7b52;
+  padding:11px 15px;z-index:20;box-shadow:0 6px 30px #0008;font:14px system-ui,sans-serif;max-width:90%;display:none}
+.modal{position:fixed;inset:0;background:#0b0907dd;z-index:30;display:grid;place-items:center;padding:20px}
+.modalbox{max-width:650px;background:#eee2ca;color:#241e18;border:1px solid #b89663;box-shadow:0 30px 90px #000b}
+.modalhead{padding:20px 22px;background:#2a211b;color:#f2e5cb;border-bottom:4px double #9b7a4b}
+.modalhead .kicker{color:#cdb281}
+.modalbody{padding:22px}
+.modalbody h2{font-size:30px;margin:0 0 10px}
+.modalbody p,.modalbody li{line-height:1.5}
+.modalbody ol{padding-left:22px}
+.modalbody .btn{width:100%;margin-top:8px}
+.result{padding:18px;border:2px solid #795d3b;background:#f6ead1;margin-top:12px}
+.result .dest{font:800 12px system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#7b2e2a}
+.result blockquote{font-size:20px;margin:10px 0 0}
+.storychoice{display:none;background:#cfb98e;padding:11px;border:1px solid #9d8052;font:14px system-ui,sans-serif}
+.storychoice.show{display:block}
+.footer{color:#a99474;font:12px system-ui,sans-serif;text-align:center;padding:18px}
+
+.intake-desk{margin-top:34px;background:linear-gradient(#cbb58c,#b69a6e);border:3px solid #4b3423;box-shadow:inset 0 0 0 2px #e8d8b5,0 10px 24px #0004;padding:18px;position:relative}
+.intake-desk:before{content:"";position:absolute;left:8%;right:8%;top:-20px;height:22px;background:#5a3d27;border:3px solid #2d1f16;border-bottom:0;border-radius:10px 10px 0 0}
+.desk-label{font:800 10px system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#59432f;margin-bottom:10px}
+.desk-grid{display:grid;grid-template-columns:1.2fr .9fr;gap:14px}
+.docket{background:#efe3c9;border:1px solid #8b7354;padding:14px;min-height:150px;box-shadow:2px 3px 0 #8c7657;position:relative;transform:rotate(-.4deg)}
+.docket:after{content:"PE-17/B";position:absolute;right:10px;top:8px;font:800 10px system-ui,sans-serif;color:#9b8466}
+.docket h4{margin:0 0 12px;font-size:18px}
+.docketrow{display:flex;justify-content:space-between;gap:15px;padding:7px 0;border-bottom:1px dotted #9a8669;font:700 12px system-ui,sans-serif}
+.route-pending{display:inline-block;padding:4px 7px;border:2px solid #8a6336;transform:rotate(-1deg);font:900 11px system-ui,sans-serif;letter-spacing:.1em;color:#7a4d28}
+.desk-props{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start}
+.prop{background:#5a3c28;border:2px solid #2c1f16;color:#ecd9b0;padding:12px;text-align:center;box-shadow:inset 0 0 0 2px #9b7046}
+.prop .big{font-size:28px;display:block;margin-bottom:5px}
+.prop small{font:700 9px system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.stamp-pad{grid-column:1/-1;background:#3c2a20;border:2px solid #1d1511;padding:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.rubberstamp{border:3px solid #7e302b;color:#7e302b;background:#e7d8b9;padding:8px 10px;font:900 10px system-ui,sans-serif;letter-spacing:.08em;transform:rotate(-2deg)}
+.rubberstamp:nth-child(2){border-color:#4c6245;color:#4c6245;transform:rotate(1deg)}
+.rubberstamp:nth-child(3){border-color:#6a4c6f;color:#6a4c6f;transform:rotate(-1deg)}
+.luggage-tag{position:absolute;left:34px;top:-54px;background:#d9bc76;border:2px solid #5a4127;color:#35271c;padding:8px 12px;font:800 10px system-ui,sans-serif;letter-spacing:.08em;transform:rotate(3deg);box-shadow:0 4px 8px #0004}
+.luggage-tag:before{content:"";position:absolute;width:2px;height:28px;background:#6b4c2f;left:18px;top:-29px}
+.scene-note{background:#efe2c6;border-left:5px solid #9a6c38;padding:12px;margin-top:12px}
+
+@media(max-width:800px){.layout{grid-template-columns:1fr}.shell{padding:12px}.mast{align-items:flex-start}.stamp{display:none}.tray{grid-template-columns:1fr 1fr}.piece{font-size:10px}.desk-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="mast">
+    <div><div class="kicker">Department of Final Transit · Property Desk</div><h1>PERSONAL EFFECTS</h1></div>
+    <div class="stamp">Prototype intake copy</div>
+  </div>
+
+  <div class="topbar">
+    <div class="casepick" id="casepick"></div>
+    <button class="btn secondary" onclick="showHelp()">How to play</button>
+  </div>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="casehead"><h2 id="caseTitle"></h2><p id="caseLesson"></p></div>
+      <div class="casebody">
+        <div class="gridwrap">
+          <div class="cols"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span></div>
+          <div class="rows"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+          <div class="grid" id="grid"></div>
+        </div>
+        <div id="result"></div>
+
+        <div class="intake-desk">
+          <div class="luggage-tag" id="luggageTag">CASE PE-001 · PENDING</div>
+          <div class="desk-label">Final Transit Property Intake · Processing Surface</div>
+          <div class="desk-grid">
+            <div class="docket">
+              <h4 id="deskCaseName">Property Intake Docket</h4>
+              <div class="docketrow"><span>Case</span><span id="deskCaseNo">PE-001</span></div>
+              <div class="docketrow"><span>Belongings</span><span id="deskPacked">0 / 0 accounted for</span></div>
+              <div class="docketrow"><span>Routing</span><span id="deskRouting" class="route-pending">PENDING</span></div>
+              <div class="scene-note" id="deskNote">Awaiting completed suitcase and routing decision.</div>
+            </div>
+            <div class="processing-note">
+              <h4>Clerk's processing notes</h4>
+              <p>Pack every listed effect. Satisfy the visible packing notes. If something feels deliberately significant, the desk may notice.</p>
+              <p><b>Priority:</b> accuracy over speed. Final Transit has been waiting a very long time already.</p>
+              <span class="processing-mark">AWAITING SEAL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="card">
+        <h3>Case file</h3>
+        <div class="story" id="story"></div>
+      </div>
+      <div class="card">
+        <h3>Packing notes</h3>
+        <div class="rules" id="rules"></div>
+        <div class="meter"><span>Weight</span><span id="weight"></span></div>
+        <div class="progress"><i id="weightbar"></i></div>
+      </div>
+      <div class="card">
+        <h3>Belongings</h3>
+        <div class="controls" style="margin-bottom:10px">
+          <button class="btn secondary full" id="rotateBtn" onclick="rotateSelected()">↻ Rotate selected item</button>
+          <button class="btn secondary full" onclick="undo()">↶ Undo last move</button>
+        </div>
+        <div class="tray" id="tray"></div>
+        <div class="hint" id="hint">Select an item, then click roughly where you want it in the suitcase.</div>
+      </div>
+      <div class="card inspect" id="inspect"><b>Inspection tag</b>Select a belonging to read its note.</div>
+      <div class="storychoice" id="storychoice"></div>
+      <div class="controls">
+        <button class="btn seal full" onclick="sealCase()">SEAL & SUBMIT TO FINAL TRANSIT</button>
+      </div>
+    </aside>
+  </div>
+  <div class="footer">Pluto Night Labs · Final Transit Property Office · Prototype tester build · No timer · Unlimited undo · Bad paperwork is eternal.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="sceneModal" style="display:none">
+  <div class="modalbox">
+    <div class="modalhead"><div class="kicker">Final Transit · New Arrival</div></div>
+    <div class="modalbody">
+      <h2 id="sceneTitle" style="margin-top:0"></h2>
+      <p id="sceneText" style="font-size:18px;line-height:1.55"></p>
+      <div class="result">
+        <div class="dest">Your task</div>
+        <p id="sceneTask" style="margin-bottom:0"></p>
+      </div>
+      <button class="btn" onclick="closeScene()">Open suitcase</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="resultModal" style="display:none">
+  <div class="modalbox">
+    <div class="modalhead"><div class="kicker" id="resultKicker">Final Transit Decision</div></div>
+    <div class="modalbody">
+      <div id="resultModalBody"></div>
+      <button class="btn" onclick="closeResult()">Return to suitcase</button>
+      <button class="btn secondary" id="nextCaseBtn" style="margin-top:8px;display:none" onclick="nextCase()">Open next case</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="intro">
+  <div class="modalbox">
+    <div class="modalhead"><div class="kicker">New starter briefing · Form PE-01</div></div>
+    <div class="modalbody">
+      <h2>You pack what people leave behind.</h2>
+      <p>The recently deceased arrive with six or seven belongings and a handful of peculiar packing rules. Fit everything into the suitcase, then seal it for Final Transit.</p>
+      <ol>
+        <li><b>Select a belonging</b>, then click roughly where you want it. Large items automatically snap inside the suitcase edges.</li>
+        <li><b>Rotate</b> long pieces when the case allows it. Click a placed piece to select it again.</li>
+        <li>Watch the <b>packing notes</b>: green means the rule currently passes. Weight is just case-file flavour in this prototype, not a puzzle rule.</li>
+        <li>Some arrangements reveal a <b>story temptation</b>. You may knowingly seal that exception — accidents are just paperwork.</li>
+      </ol>
+      <p><b>Case 1 is the tutorial.</b> Start with the reading glasses and make them share a side with the letters. Diagonals do not count.</p>
+      <button class="btn" onclick="startGame()">Clock in</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const cases = [
+{
+ id:1,title:"Case 01 — The Postman",lesson:"Tutorial: make the glasses touch the letters. Touching means sharing a side.",
+ story:"Mr Finch delivered everyone else’s news for forty years and kept one letter he could not bear to send.",
+ weightMax:null,
+ items:[
+  {id:"letters",icon:"✉",name:"Letters",w:2,h:2,kg:.2,note:"Every street has a story. One envelope still has no postmark."},
+  {id:"boots",icon:"♟",name:"Boots",w:2,h:2,kg:2.4,note:"The left sole remembers the short route home."},
+  {id:"thermos",icon:"▥",name:"Thermos",w:1,h:2,kg:1.1,note:"Tea, made at dawn and returned warm at dusk."},
+  {id:"album",icon:"▤",name:"Stamp album",w:2,h:2,kg:1.8,note:"There is a space where the rarest stamp should be."},
+  {id:"bell",icon:"◉",name:"Bicycle bell",w:1,h:1,kg:.3,note:"Children knew the sound before they knew his name."},
+  {id:"glasses",icon:"⌐",name:"Reading glasses",w:1,h:1,kg:.2,note:"He only needed these for the addresses he loved."}
+ ],
+ ruleLabels:["Glasses touch the letters","Boots occupy the bottom edge"],
+ normal:"Mr Finch delivered every last message, save one. At last, someone delivered him.",
+ alt:"He kept one letter for himself. It reached the person it was meant for, eventually.",
+ quarantine:"Intake has requested a forwarding address for his boots."
+},
+{
+ id:2,title:"Case 02 — The Magician",lesson:"New trick: rotate the wand. Scarves dislike one another.",
+ story:"Ada Vale knew precisely where the trick ended. Her audience never did.",
+ weightMax:null,
+ items:[
+  {id:"hat",icon:"⌒",name:"Top hat",w:2,h:2,note:"No one ever saw the false bottom."},
+  {id:"scarf1",icon:"≈",name:"Silk scarf I",w:1,h:1,note:"One for applause."},
+  {id:"scarf2",icon:"≈",name:"Silk scarf II",w:1,h:1,note:"One for escape."},
+  {id:"scarf3",icon:"≈",name:"Silk scarf III",w:1,h:1,note:"One for the person waiting backstage."},
+  {id:"wand",icon:"✦",name:"Wand",w:1,h:3,note:"The finish wore away where she held it."},
+  {id:"slippers",icon:"◡",name:"Rabbit slippers",w:2,h:1,note:"The rabbit retired years before she did."},
+  {id:"deck",icon:"♠",name:"Trick deck",w:2,h:1,note:"The queen of hearts has a handwritten name on the back."}
+ ],
+ ruleLabels:["Two cells immediately above the hat stay empty","Wand lies horizontally","Scarves do not touch one another"],
+ normal:"For her final trick, Ada made an entire lifetime look effortless.",
+ alt:"The queen of hearts came out of the hat first. Ada followed, to a standing ovation from Quarantine.",
+ quarantine:"Three scarves have formed a union and refuse to separate."
+},
+{
+ id:3,title:"Case 03 — The Gardener",lesson:"Final test: protect the photograph, keep the trowel away from the jar, put the radio on the bottom edge, keep the seed tin beside the gloves, and keep the jar away from the suitcase edge.",
+ story:"Mae grew tomatoes for the whole street. The dog in the photograph always got the first one.",
+ weightMax:null,
+ items:[
+  {id:"seed",icon:"✿",name:"Seed tin",w:2,h:1,kg:.6,note:"Marked ‘next spring’ in handwriting that grew shakier."},
+  {id:"gloves",icon:"✋",name:"Gloves",w:1,h:2,kg:.4,note:"The right thumb was repaired with blue thread."},
+  {id:"trowel",icon:"⚒",name:"Trowel",w:1,h:3,kg:1.2,note:"Still stained red from the last harvest."},
+  {id:"jar",icon:"▣",name:"Tomato jar",w:2,h:2,kg:2.1,note:"The lid says ‘save for a good day.’ An arrow marks its upright side.",arrow:true},
+  {id:"radio",icon:"▦",name:"Radio",w:2,h:1,kg:1.5,note:"Weather forecast at six; dance music at seven."},
+  {id:"photo",icon:"▧",name:"Dog photograph",w:1,h:1,kg:.1,note:"Pip is looking at something just outside the frame."}
+ ],
+ ruleLabels:["Photograph is surrounded north, south, east and west","Trowel does not touch the jar","Radio occupies the bottom edge","Seed tin touches the gloves","Tomato jar does not touch the suitcase edge"],
+ normal:"Mae saved one jar for a good day. They found a whole garden waiting.",
+ alt:"The tomatoes escaped, rooted through the forms and claimed Quarantine as an allotment.",
+ quarantine:"Pip’s photograph has requested a sturdier frame."
+}
+];
+
+let current=0, selected=null, placed={}, history=[], jarTurns=0;
+const visualIcon={
+ letters:"✉️",boots:"👢",thermos:"☕",album:"📔",bell:"🔔",glasses:"👓",
+ hat:"🎩",scarf1:"🧣",scarf2:"🧣",scarf3:"🧣",wand:"🪄",slippers:"🥿",deck:"🃏",
+ seed:"🌱",gloves:"🧤",trowel:"🪏",jar:"🫙",radio:"📻",photo:"🐕"
+};
+const itemPalette={
+ letters:["#a8453f","#d06b5d","#f0c2b0"],
+ boots:["#5b3b28","#8a6345","#c3a17f"],
+ thermos:["#2f7378","#5fa4a8","#b4dcda"],
+ album:["#655385","#8d78ae","#cdbfe0"],
+ bell:["#b88427","#d5ad47","#f0d281"],
+ glasses:["#3e744d","#6b9c76","#b9d7bf"],
+ hat:["#40345f","#67558a","#b0a0c7"],
+ scarf1:["#ad3d55","#d66c7e","#f0a9b4"],
+ scarf2:["#3d7289","#6fa6b7","#b8dae4"],
+ scarf3:["#b96f2d","#d89950","#efca8f"],
+ wand:["#302e37","#5b5764","#aaa5b1"],
+ slippers:["#985174","#c37e9e","#e2b3c9"],
+ deck:["#842b30","#b34a4e","#e29fa1"],
+ seed:["#657638","#93a858","#c9d691"],
+ gloves:["#aa7130","#ce9a55","#efd097"],
+ trowel:["#646e77","#939da5","#c9d0d5"],
+ jar:["#ad3e2f","#d45d47","#efaa95"],
+ radio:["#526437","#7e9255","#becb91"],
+ photo:["#665845","#947f62","#d5c3a6"]
+};
+const sceneCopy=[
+ {title:"Mr Finch has arrived.",text:"Forty years of letters, wet pavements, early mornings — and one envelope he could never bring himself to send. Final Transit only needs his suitcase packed before he can move on.",task:"Fit every belonging into the case. Start by making the reading glasses share a side with the letters."},
+ {title:"Ada Vale has one final trick.",text:"A lifetime of applause has been reduced to a hat, three scarves, a battered wand and the sort of deck that probably should have been confiscated years ago.",task:"Pack everything neatly. Rotate the wand, keep the scarves apart and leave clear space above the hat — unless you knowingly choose otherwise."},
+ {title:"Mae brought the garden with her.",text:"Seed tin. Blue-thread gloves. A jar marked for a good day. And a photograph of Pip, who appears to be looking at something just outside the frame.",task:"This one is tighter: protect the photograph on all four sides, keep the trowel away from the jar, put the radio on the bottom edge, keep the seed tin touching the gloves, and keep the tomato jar away from the suitcase edge."}
+];
+
+
+function C(){return cases[current]}
+function showScene(){
+ const s=sceneCopy[current];
+ document.getElementById('sceneTitle').textContent=s.title;
+ document.getElementById('sceneText').textContent=s.text;
+ document.getElementById('sceneTask').textContent=s.task;
+ document.getElementById('sceneModal').style.display='grid';
+}
+function closeScene(){document.getElementById('sceneModal').style.display='none'}
+function updateDesk(){
+ const packed=C().items.filter(it=>placed[it.id]).length;
+ const total=C().items.length;
+ const no=String(current+1).padStart(3,'0');
+ document.getElementById('deskCaseNo').textContent=`PE-${no}`;
+ document.getElementById('deskPacked').textContent=`${packed} / ${total} accounted for`;
+ document.getElementById('deskCaseName').textContent=C().title.replace(/^Case \d+ — /,'')+' · Property Docket';
+ document.getElementById('deskRouting').textContent='AWAITING SEAL';
+ document.getElementById('deskNote').textContent=packed===total?'All belongings accounted for. Awaiting seal and routing decision.':'Awaiting completed suitcase and routing decision.';
+ document.getElementById('luggageTag').textContent=`CASE PE-${no} · ${packed}/${total} ITEMS`;
+}
+function startGame(){document.getElementById('intro').style.display='none';selectItem(current===0?'glasses':null);showScene()}
+function showHelp(){document.getElementById('intro').style.display='grid'}
+function toast(s){let t=document.getElementById('toast');t.textContent=s;t.style.display='block';clearTimeout(t._x);t._x=setTimeout(()=>t.style.display='none',2200)}
+
+function buildCaseButtons(){
+ const p=document.getElementById('casepick');p.innerHTML='';
+ cases.forEach((c,i)=>{let b=document.createElement('button');b.textContent=`Case ${i+1}`;b.className=i===current?'active':'';b.onclick=()=>loadCase(i);p.appendChild(b)})
+}
+function loadCase(i){
+ current=i;selected=null;placed={};history=[];jarTurns=0;
+ document.getElementById('result').innerHTML='';
+ document.getElementById('caseTitle').textContent=C().title;
+ document.getElementById('caseLesson').textContent=C().lesson;
+ document.getElementById('story').textContent=C().story;
+ document.getElementById('inspect').innerHTML='<b>Inspection tag</b>Select a belonging to read its note.';
+ buildCaseButtons();buildGrid();renderTray();renderRules();
+ if(i===0) document.getElementById('hint').innerHTML='Tutorial: select <b>Reading glasses</b>, then place them so they share an edge with the letters. For large items, click the area you want — they will snap inside the suitcase edge.';
+ if(i===1) document.getElementById('hint').innerHTML='Tip: the wand starts vertical. Select it and use <b>Rotate selected</b> before placing.';
+ if(i===2) document.getElementById('hint').innerHTML='Final test: the photo needs four occupied neighbours, the radio must reach row 6, the seed tin must touch the gloves, the trowel must stay clear of the jar, and the jar must stay off the outer edge.';
+ updateStoryChoice();
+ updateDesk();
+ if(document.getElementById('intro').style.display==='none') showScene();
+}
+function buildGrid(){
+ const g=document.getElementById('grid');g.innerHTML='';
+ for(let r=0;r<6;r++)for(let c=0;c<6;c++){let d=document.createElement('div');d.className='cell';d.dataset.r=r;d.dataset.c=c;d.onclick=()=>placeSelected(c,r);d.onmouseenter=()=>showPreview(c,r);d.onmousemove=()=>showPreview(c,r);g.appendChild(d)}
+ g.onmouseleave=hidePreview;
+ renderPieces();
+}
+function dims(it){
+ const rot=(placed[it.id]?.rot ?? it.rot ?? 0)%2;
+ return rot?[it.h,it.w]:[it.w,it.h]
+}
+function cellsFor(id,override){
+ const it=C().items.find(x=>x.id===id),p=override||placed[id];if(!p)return[];
+ let [w,h]=(p.rot%2)?[it.h,it.w]:[it.w,it.h],out=[];
+ for(let y=p.r;y<p.r+h;y++)for(let x=p.c;x<p.c+w;x++)out.push([x,y]);return out
+}
+function occupied(except){
+ const s=new Set();for(const id in placed){if(id===except)continue;cellsFor(id).forEach(([x,y])=>s.add(x+','+y))}return s
+}
+function snappedPosition(id,c,r,rot){
+ const it=C().items.find(x=>x.id===id),[w,h]=(rot%2)?[it.h,it.w]:[it.w,it.h];
+ let sc=Math.max(0,Math.min(c,6-w)),sr=Math.max(0,Math.min(r,6-h));
+ let candidates=[];
+ for(let rr=0;rr<=6-h;rr++)for(let cc=0;cc<=6-w;cc++){
+   const legal=canPlace(id,cc,rr,rot);
+   const coversClick=c>=cc&&c<cc+w&&r>=rr&&r<rr+h;
+   const dist=Math.abs(cc-sc)+Math.abs(rr-sr)+(coversClick?0:3);
+   candidates.push({cc,rr,dist,legal});
+ }
+ const legal=candidates.filter(x=>x.legal).sort((a,b)=>a.dist-b.dist);
+ if(legal.length)return {...legal[0],w,h};
+ const fallback=candidates.sort((a,b)=>a.dist-b.dist)[0];
+ return {...fallback,w,h};
+}
+function showPreview(c,r){
+ document.querySelector('.preview')?.remove();
+ if(!selected)return;
+ const it=C().items.find(x=>x.id===selected),rot=placed[selected]?.rot||it.rot||0;
+ const p=snappedPosition(selected,c,r,rot),g=document.getElementById('grid');
+ let d=document.createElement('div');d.className='preview'+(p.legal?'':' bad');
+ d.style.left=(p.cc/6*100)+'%';d.style.top=(p.rr/6*100)+'%';d.style.width=(p.w/6*100)+'%';d.style.height=(p.h/6*100)+'%';
+ g.appendChild(d);
+}
+function hidePreview(){document.querySelector('.preview')?.remove()}
+
+function canPlace(id,c,r,rot){
+ const it=C().items.find(x=>x.id===id),[w,h]=(rot%2)?[it.h,it.w]:[it.w,it.h];
+ if(c<0||r<0||c+w>6||r+h>6)return false;
+ if(current===1 && id==='hat' && r===0)return false;
+ const occ=occupied(id);
+ for(let y=r;y<r+h;y++)for(let x=c;x<c+w;x++)if(occ.has(x+','+y))return false;
+ return true
+}
+function placeSelected(c,r){
+ if(!selected){toast('Select a belonging first.');return}
+ const it=C().items.find(x=>x.id===selected);
+ const old=placed[selected]?JSON.parse(JSON.stringify(placed[selected])):null;
+ const rot=placed[selected]?.rot||it.rot||0;
+ const p=snappedPosition(selected,c,r,rot);
+ if(!p || !p.legal){toast('No legal space for that item there.');return}
+ history.push({id:selected,old});
+ placed[selected]={c:p.cc,r:p.rr,rot};
+ hidePreview();
+ renderAll();
+ if(current===0 && selected==='boots' && cellsFor('boots').some(([x,y])=>y===5))toast('Boots are on the bottom edge ✓');
+}
+function selectItem(id){
+ if(!id)return;selected=id;
+ const it=C().items.find(x=>x.id===id);
+ document.getElementById('inspect').innerHTML=`<b>${it.name}</b>${it.note}`;
+ renderAll();
+ if(current===2&&id==='photo')highlightPhotoFrame();
+ if(window.innerWidth<=800) toast('Selected. Tap a suitcase square to place it.');
+}
+function rotateSelected(){
+ if(!selected){toast('Select a belonging first.');return}
+ const it=C().items.find(x=>x.id===selected),old=placed[selected]?JSON.parse(JSON.stringify(placed[selected])):null;
+ if(it.w===it.h && !it.arrow){toast('That item looks the same after a quarter turn.');return}
+ history.push({id:selected,old});
+ if(placed[selected]){
+   let next=(placed[selected].rot||0)+1;
+   if(!canPlace(selected,placed[selected].c,placed[selected].r,next)){history.pop();toast('No room to rotate it there.');return}
+   placed[selected].rot=next;
+ }else{
+   it.rot=(it.rot||0)+1;
+ }
+ if(selected==='jar')jarTurns=(jarTurns+1)%4;
+ renderAll();
+ if(current===1&&selected==='wand')toast('Good. The wand needs to lie horizontally.');
+}
+function undo(){
+ const h=history.pop();if(!h){toast('Nothing to undo.');return}
+ if(h.old)placed[h.id]=h.old;else delete placed[h.id];selected=h.id;renderAll()
+}
+function renderTray(){
+ const t=document.getElementById('tray');t.innerHTML='';
+ C().items.forEach(it=>{
+  let b=document.createElement('button');
+  const p=placed[it.id];
+  b.className='item '+(p?'packed':'unpacked')+(selected===it.id?' selected':'');
+  const rot=p?.rot??it.rot??0;const w=rot%2?it.h:it.w,h=rot%2?it.w:it.h;
+  const pal=itemPalette[it.id]||["#d9c7a5","#d9c7a5","#d9c7a5"];
+  b.style.setProperty('--ic',pal[2]);
+  b.innerHTML=`<span class="itemicon" aria-hidden="true">${visualIcon[it.id]||it.icon||'·'}</span><span class="itemtext"><b>${it.name}</b><small>${w}×${h}${it.kg!=null?' · '+it.kg+' kg':''}</small></span>`;
+  b.onclick=()=>selectItem(it.id);t.appendChild(b)
+ })
+}
+function renderPieces(){
+ const g=document.getElementById('grid');
+ [...g.querySelectorAll('.piece')].forEach(x=>x.remove());
+ for(const id in placed){
+   const it=C().items.find(x=>x.id===id),p=placed[id],[w,h]=(p.rot%2)?[it.h,it.w]:[it.w,it.h];
+   let d=document.createElement('div');d.className='piece item-'+id+(selected===id?' selected':'');
+   d.style.left=(p.c/6*100)+'%';d.style.top=(p.r/6*100)+'%';d.style.width=(w/6*100)+'%';d.style.height=(h/6*100)+'%';
+   const pal=itemPalette[it.id]||["#785a3c","#9b7750","#d0aa74"];
+   d.style.setProperty('--pc1',pal[0]);d.style.setProperty('--pc2',pal[1]);
+   const icon=visualIcon[it.id]||it.icon||'•';
+   d.innerHTML=it.arrow
+     ?`<div class="pieceart"><span class="pieceicon arrow" style="transform:rotate(${jarTurns*90}deg)">↑</span><span class="piecename">${icon} ${it.name}</span></div>`
+     :`<div class="pieceart"><span class="pieceicon">${icon}</span><span class="piecename">${it.name}</span></div>`;
+   d.onclick=(e)=>{e.stopPropagation();selectItem(id)};g.appendChild(d)
+ }
+}
+function shareEdge(a,b){
+ const A=cellsFor(a),B=new Set(cellsFor(b).map(([x,y])=>x+','+y));
+ return A.some(([x,y])=>B.has((x+1)+','+y)||B.has((x-1)+','+y)||B.has(x+','+(y+1))||B.has(x+','+(y-1)))
+}
+function allPlaced(){return C().items.every(it=>placed[it.id])}
+function scarfTouch(){
+ const ids=['scarf1','scarf2','scarf3'];
+ return ids.some((a,i)=>ids.slice(i+1).some(b=>placed[a]&&placed[b]&&shareEdge(a,b)))
+}
+function hatClear(){
+ if(!placed.hat)return false;const h=placed.hat;if(h.r===0)return false;
+ const occ=occupied('hat');return !occ.has(h.c+','+(h.r-1))&&!occ.has((h.c+1)+','+(h.r-1))
+}
+function wandHorizontal(){
+ if(!placed.wand)return false;let p=placed.wand;return p.rot%2===1
+}
+function photoSurrounded(){
+ if(!placed.photo)return false;const [x,y]=cellsFor('photo')[0]||[-9,-9],occ=occupied('photo');
+ return occ.has(x+','+(y-1))&&occ.has(x+','+(y+1))&&occ.has((x-1)+','+y)&&occ.has((x+1)+','+y)
+}
+function ruleStates(){
+ if(current===0)return [
+   placed.glasses&&placed.letters&&shareEdge('glasses','letters'),
+   placed.boots&&cellsFor('boots').some(([x,y])=>y===5)
+ ];
+ if(current===1)return [hatClear(),wandHorizontal(),!scarfTouch() && ['scarf1','scarf2','scarf3'].every(id=>placed[id])];
+ return [
+   photoSurrounded(),
+   placed.trowel&&placed.jar&&!shareEdge('trowel','jar'),
+   placed.radio&&cellsFor('radio').some(([x,y])=>y===5),
+   placed.seed&&placed.gloves&&shareEdge('seed','gloves'),
+   placed.jar&&!cellsFor('jar').some(([x,y])=>x===0||y===0||x===5||y===5)
+ ]
+}
+function deckException(){
+ if(current!==1||!placed.hat||!placed.deck)return false;
+ const h=placed.hat,d=placed.deck;
+ return h.r>0 && d.r===h.r-1 && d.c===h.c && d.rot%2===0
+}
+function storyException(){
+ if(current===0)return placed.letters&&placed.album&&shareEdge('letters','album');
+ if(current===1)return deckException();
+ if(current===2)return placed.jar&&jarTurns===2;
+ return false
+}
+function renderRules(){
+ const rs=document.getElementById('rules'),st=ruleStates();rs.innerHTML='';
+ C().ruleLabels.forEach((lab,i)=>{let d=document.createElement('div');let state=st[i];d.className='rule '+(state?'pass':'fail');d.innerHTML=`<span class="dot">${state?'✓':'×'}</span><span>${lab}</span>`;rs.appendChild(d)})
+ let total=C().items.reduce((a,it)=>a+(it.kg||0),0),w=document.getElementById('weight'),bar=document.getElementById('weightbar');
+ if(total>0){
+   w.textContent=`Inventory ${total.toFixed(1)} kg · informational only`;
+   bar.style.width='0%';
+   bar.parentElement.style.display='none';
+ }else{
+   w.textContent='No weight rule in this case';
+   bar.parentElement.style.display='none';
+ }
+}
+function updateStoryChoice(){
+ let s=document.getElementById('storychoice'),on=storyException();
+ if(!on){s.className='storychoice';s.innerHTML='';return}
+ s.className='storychoice show';
+ if(current===0)s.innerHTML='<b>Story temptation:</b> The letters touch the album. Keep his secret in the empty page? Sealing now acknowledges the choice.';
+ if(current===1)s.innerHTML='<b>Deliberate exception:</b> The deck is directly above the hat, breaking hat clearance. Seal anyway to return it to the false bottom.';
+ if(current===2)s.innerHTML='<b>Deliberate exception:</b> The tomato jar is upside down. Seal anyway and trust the lid.';
+}
+function renderAll(){renderTray();renderPieces();renderRules();updateStoryChoice();updateDesk()}
+function highlightPhotoFrame(){
+ document.querySelectorAll('.cell').forEach(x=>x.classList.remove('hl'));
+ if(!placed.photo)return;
+ const [x,y]=cellsFor('photo')[0];
+ [[x,y-1],[x,y+1],[x-1,y],[x+1,y]].forEach(([cx,cy])=>{
+   if(cx>=0&&cy>=0&&cx<6&&cy<6)document.querySelector(`.cell[data-c="${cx}"][data-r="${cy}"]`)?.classList.add('hl')
+ })
+}
+function showResult(title,line,detail,good=false){
+ const m=document.getElementById('resultModal');
+ document.getElementById('resultKicker').textContent=title;
+ document.getElementById('resultModalBody').innerHTML=`<div class="result"><div class="dest">${title}</div><blockquote>“${line}”</blockquote><p>${detail}</p></div>`;
+ const next=document.getElementById('nextCaseBtn');
+ next.style.display=(good && current<cases.length-1)?'block':'none';
+ m.style.display='grid';
+}
+function closeResult(){document.getElementById('resultModal').style.display='none'}
+function nextCase(){closeResult();loadCase(Math.min(current+1,cases.length-1));window.scrollTo({top:0,behavior:'smooth'})}
+function sealCase(){
+ try{
+   if(!allPlaced()){
+     const missing=C().items.filter(it=>!placed[it.id]).map(it=>it.name);
+     showResult('QUARANTINE · Incomplete Effects','The suitcase appears to have misplaced part of the deceased.',`Still to pack: <b>${missing.join(', ')}</b>.`);
+     return;
+   }
+   const states=ruleStates(),ex=storyException();
+   const valid=states.every(Boolean);
+   if(current===1&&ex){
+     showResult('QUARANTINE · Chosen Exception',C().alt,'You knowingly broke the hat-clearance rule for the story choice.',true);
+     return;
+   }
+   if(valid){
+     showResult('HEAVEN · Property Accepted',ex?C().alt:C().normal,ex?'The desk noticed what you chose to preserve.':'All packing notes satisfied.',true);
+     return;
+   }
+   const failed=C().ruleLabels.filter((x,i)=>!states[i]);
+   showResult('QUARANTINE · Packing Breach',C().quarantine,`<b>Failed:</b> ${failed.join('; ')}`);
+ }catch(err){
+   console.error(err);
+   showResult('INTAKE ERROR · Manual Review','Something jammed in the paperwork.','The prototype hit an unexpected error while sealing, but the button is working. Try Undo or reload the case.');
+ }
+}
+loadCase(0);updateDesk();
+</script>
+</body>
+</html>
+<style>
+#rotateBtn{
+  background:#8d6338!important;
+  color:#fff3dc!important;
+  border:2px solid #5a3b22!important;
+  box-shadow:inset 0 0 0 1px #c99b62,0 2px 0 #3d2b1d;
+}
+#rotateBtn:hover{filter:brightness(1.12)}
+.controls button[onclick="undo()"]{
+  background:#667454!important;
+  color:#fff8e8!important;
+  border:2px solid #405039!important;
+  box-shadow:inset 0 0 0 1px #9eae86,0 2px 0 #30402d;
+}
+.controls button[onclick="undo()"]:hover{filter:brightness(1.1)}
+.processing-note{
+  background:#efe2c6;
+  border:1px solid #927452;
+  border-left:5px solid #8e6337;
+  padding:14px;
+  min-height:150px;
+}
+.processing-note h4{margin:0 0 10px;font-size:17px}
+.processing-note p{margin:8px 0;font:13px/1.5 system-ui,sans-serif;color:#5c4b39}
+.processing-mark{
+  display:inline-block;
+  margin-top:8px;
+  padding:6px 9px;
+  border:2px solid #8d6b45;
+  color:#765333;
+  font:900 10px system-ui,sans-serif;
+  letter-spacing:.1em;
+  transform:rotate(-1deg);
+}
+
+@media(max-width:800px){
+  body{overflow-x:hidden}
+  .shell{padding:10px;max-width:100%}
+  .mast{display:block}
+  .mast h1{font-size:38px;line-height:.95}
+  .topbar{align-items:stretch;flex-direction:column}
+  .casepick{display:grid;grid-template-columns:repeat(3,1fr);width:100%}
+  .casepick button{min-height:44px}
+  .topbar>.btn{width:100%;min-height:44px}
+  .layout{grid-template-columns:1fr;gap:14px}
+  .panel,.card{min-width:0}
+  .casehead{padding:14px}
+  .casehead h2{font-size:24px}
+  .casebody{padding:10px}
+  .gridwrap{padding:12px 12px 22px;max-width:100%;border-width:4px;border-radius:18px}
+  .grid{border-width:3px}
+  .cols,.rows{font-size:9px}
+  .piece{font-size:9px;border-width:1px}
+  .piece .pieceicon{width:30px;height:30px;font-size:19px}
+  .piece .piecename{font-size:8px}
+  .side{gap:10px}
+  .card{padding:12px}
+  .tray{grid-template-columns:1fr}
+  .item{min-height:66px}
+  .itemicon{width:38px;height:38px;font-size:22px}
+  .controls{grid-template-columns:1fr}
+  .btn{min-height:46px;font-size:16px}
+  .intake-desk{margin-top:28px;padding:12px}
+  .desk-grid{grid-template-columns:1fr}
+  .docket,.processing-note{min-height:auto}
+  .modal{padding:10px;align-items:start;overflow-y:auto}
+  .modalbox{width:min(100%,620px);margin-top:12px}
+  .modalbody{padding:16px}
+  .modalbody h2{font-size:25px}
+  .modalbody p,.modalbody li{font-size:16px}
+}
+@media(max-width:430px){
+  .mast h1{font-size:31px}
+  .casehead h2{font-size:21px}
+  .gridwrap{padding:10px 10px 20px}
+  .gridwrap:before,.gridwrap:after{width:50px}
+  .piece .pieceicon{width:24px;height:24px;font-size:16px}
+  .piece .piecename{font-size:7px}
+  .item{grid-template-columns:36px 1fr}
+  .itemicon{width:34px;height:34px;font-size:20px}
+  .itemtext b{padding-right:40px;font-size:15px}
+  .hint{font-size:12px}
+  .luggage-tag{left:18px;font-size:8px}
+}
+
+</style>
